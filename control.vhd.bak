@@ -1,0 +1,263 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity control is
+    port (
+         
+        clk      : in std_logic; 
+        reset    : in std_logic;
+        opcode   : in std_logic_vector(3 downto 0); 
+        accZ    : in std_logic;                       
+        acc15   : in std_logic;
+
+        acc_ld   : out std_logic; 
+        pc_ld    : out std_logic;
+        ir_ld    : out std_logic;
+        acc_oe   : out std_logic; 
+        alufs    : out std_logic_vector(1 downto 0);
+        SelA     : out std_logic;
+        SelB     : out std_logic; 
+        RnW      : out std_logic
+    );
+end control;
+
+architecture fsm of control is
+    type state_type is (A, A1, B, C, C1, C2, C3,C4 ,C5 ,D1 ,D2 ,D3 ,D4 ,D5,E );
+    signal state, next_state : state_type;
+begin
+
+    
+    process(clk, reset)
+   
+    begin
+        if reset = '1' then
+            state <= A;
+        elsif rising_edge(clk) then
+            state <= next_state;
+        end if;
+    end process;
+
+    
+    process(state, opcode, accZ, acc15)
+    begin
+        next_state <= A; 
+
+        case state is
+            when A =>
+                   next_state <= A1;
+               
+            when A1 =>
+                 case opcode is
+                    when "0101" =>
+                       if  acc15 = '0'  then
+                           next_state <= C;
+                       else
+                           next_state <= B;
+                       end if;
+
+                     when "0110" =>
+                         if accZ = '0'   then
+                              next_state <= C;
+                         else
+                              next_state <= B;
+                         end if;
+
+                     when "0100" =>
+                       next_state <= C;
+                     
+                     when "0111" =>
+                       next_state <= A;
+
+
+                     when others =>
+                                next_state <= B;
+                    end case;
+
+
+            when B =>
+                next_state <= C;
+
+            when C =>
+                case opcode is
+                    when "0010"  => next_state <= C5;
+                    when "0011"  => next_state <= C4;
+                    when "0000" => next_state <= C3;
+                    when "0100" | "0101" | "0110" => next_state <= C1;
+                    when "0001" => next_state <= C2;             
+                    when others => next_state <= A;
+                end case;
+
+            when C1 =>
+                next_state <= D1;
+            when C2 =>
+                next_state <= D2;
+            when C3 =>
+                next_state <= D3;
+            when C4 =>
+                next_state <= D4;
+            when C5 =>
+                next_state <= D5;
+            when D2 =>
+                next_state <= E;
+           
+
+
+
+
+
+            when D1 | E | D3 | D4 | D5  =>
+                next_state <= A;
+
+      
+
+            when others =>
+                next_state <= A;
+        end case;
+    end process;
+
+    
+    process(state)
+    begin
+        
+        SelA   <= '0';
+        SelB   <= '0';
+        RnW    <= '1';
+        pc_ld <= '0';
+        ir_ld  <= '0';
+        acc_ld <= '0';
+        acc_oe <= '0';
+        alufs  <= "00";
+
+        case state is
+            when A =>
+            SelA   <= '0';
+            RnW    <= '1';
+            ir_ld  <= '0';
+            acc_oe <= '0';
+            when A1 =>
+                SelA   <= '0';
+        
+                RnW    <= '1';
+                pc_ld <= '0';
+                ir_ld  <= '1';
+    
+                acc_oe <= '0';
+      
+
+
+            when B =>
+                RnW    <= '1';
+                SelA   <= '0';
+                SelB   <= '0';
+                
+                acc_oe <= '0';
+                alufs  <= "11";
+
+            when C =>
+                RnW    <= '1';
+                SelA   <= '1';
+                SelB   <= '0';
+                pc_ld <= '1';
+                acc_oe <= '0';
+
+
+
+            when C1 =>
+      
+        SelA   <= '1';
+        SelB   <= '0';
+        alufs  <= "00";
+
+
+            when C2 => 
+        RnW    <= '0';       
+        SelA   <= '1';
+        SelB   <= '1';
+       
+  
+       
+
+
+            when C3 =>  
+         RnW    <= '1';       
+        SelA   <= '1';
+        SelB   <= '1';
+       
+        acc_ld <= '0';
+        acc_oe <= '0';
+        alufs  <= "00";
+       when C4 =>  
+                RnW    <= '1';       
+        SelA   <= '1';
+        SelB   <= '1';
+       
+        acc_ld <= '0';
+        acc_oe <= '0';
+        alufs  <= "01";
+        when C5 =>  
+        RnW    <= '1';       
+        SelA   <= '1';
+        SelB   <= '1';
+       
+        acc_ld <= '0';
+        acc_oe <= '0';
+        alufs  <= "10";
+
+
+        when D1 =>
+  
+         SelA   <= '1';
+         SelB   <= '0';
+        
+        pc_ld <= '1';
+
+            when D2 =>
+         RnW    <= '0';  
+         SelA   <= '1';
+         acc_ld <= '1';
+        acc_oe <= '1';
+   
+         when D3 =>
+         RnW    <= '1';  
+         SelA   <= '1';
+         SelB   <= '1';
+        
+        acc_ld <= '1';
+
+        acc_oe <= '0';
+        alufs  <= "00";
+ when D4 =>
+         RnW    <= '1';  
+         SelA   <= '1';
+         SelB   <= '1';
+        
+        acc_ld <= '1';
+
+        acc_oe <= '0';
+        alufs  <= "01";
+ when D5 =>
+         RnW    <= '1';  
+         SelA   <= '1';
+         SelB   <= '1';
+        
+        acc_ld <= '1';
+
+        acc_oe <= '0';
+        alufs  <= "10";
+
+        when E =>
+         RnW    <= '0';  
+         SelA   <= '1';
+         acc_oe <= '1';
+
+
+            when others =>
+                null;
+        end case;
+    end process;
+
+end fsm;
+
+
+

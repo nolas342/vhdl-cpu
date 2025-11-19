@@ -1,0 +1,29 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity IR is
+    Port (
+        Ir_ld          : in std_logic;
+        instruction_in : in std_logic_vector(15 downto 0);
+        opcode         : out std_logic_vector(3 downto 0);
+        operand        : out std_logic_vector(11 downto 0)
+    );
+end IR;
+
+architecture Behavioral of IR is
+    signal instruction_reg : std_logic_vector(15 downto 0);        
+begin
+
+    process(Ir_ld, instruction_in)
+    begin
+        if Ir_ld = '1' then
+            instruction_reg <= instruction_in;
+        end if;
+    end process;
+
+    opcode  <= instruction_reg(15 downto 12);  
+    operand <= instruction_reg(11 downto 0);   
+
+end Behavioral;
+

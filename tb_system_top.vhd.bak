@@ -1,0 +1,79 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity tb_system_top is
+end tb_system_top;
+
+architecture Behavioral of tb_system_top is
+
+    component system_top
+        Port (
+            clk    : in  std_logic;
+            reset  : in  std_logic
+        );
+    end component;
+
+    signal clk    : std_logic := '0';
+    signal reset  : std_logic := '1';
+
+    constant clk_period : time := 20 ns;
+
+    -- Pour observer les signaux internes via la configuration du simulateur
+    signal sim_done : boolean := false;
+
+begin
+
+    -- Instance de test
+    uut: system_top
+        port map (
+            clk   => clk,
+            reset => reset
+        );
+
+    -- Génération horloge
+    clk_process : process
+    begin
+        while not sim_done loop
+            clk <= '0';
+            wait for clk_period / 2;
+            clk <= '1';
+            wait for clk_period / 2;
+        end loop;
+        wait;
+    end process;
+
+    -- Stimulus + vérification
+    stim_proc : process
+    begin
+        -- Phase de reset
+        wait for 40 ns;
+        reset <= '0';
+
+        -- Observation des étapes
+        wait for 140 ns; -- après quelques cycles, l'ACC doit contenir le résultat de LDA + ADD
+        assert uut.acc_out = x"0000"
+        report "Erreur : LDA et ADD ne semblent pas s?être exécutées correctement." severity warning;
+
+        wait for 200 ns; -- après JNE vers 005h
+        assert uut.pc_out = "000000000101"
+        report "Erreur : JNE vers l'adresse 5 non pris ou PC incorrect." severity warning;
+
+        wait for 300 ns; -- après SUB, l'accumulateur doit changer
+        assert uut.acc_out /= x"0000"
+        report "Erreur : SUB ne semble pas avoir modifié l'ACC." severity warning;
+
+        wait for 420 ns; -- après STP, vérifier que PC n?évolue plus
+        variable last_pc : std_logic_vector(11 downto 0);
+        last_pc := uut.pc_out;
+        wait for 40 ns;
+        assert uut.pc_out = last_pc
+        report "Erreur : Le programme aurait dû s?arrêter après STP." severity warning;
+
+        -- Fin de simulation
+        sim_done <= true;
+        wait;
+    end process;
+
+end Behavioral;
+

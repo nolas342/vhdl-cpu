@@ -1,0 +1,31 @@
+vsim -gui work.system_top
+# vsim -gui work.system_top 
+# Start time: 10:36:02 on Oct 27,2025
+# Loading std.standard
+# Loading std.textio(body)
+# Loading ieee.std_logic_1164(body)
+# Loading ieee.numeric_std(body)
+# Loading work.system_top(structural)
+# Loading work.control(fsm)
+# Loading work.pc(behavioral)
+# Loading work.muxa(behavioral)
+# Loading work.ram(behavioral)
+# Loading work.ir(behavioral)
+# Loading work.muxb(behavioral)
+# Loading work.acc(behavioral)
+# Loading work.acc_buffer(behavioral)
+# Loading work.ual(behavioral)
+add wave -r /*
+# ** Warning: (vsim-WLF-5000) WLF file currently in use: vsim.wlf
+#           File in use by: DELL  Hostname: DESKTOP-45P75GV  ProcessID: 21764
+#           Attempting to use alternate WLF file "./wlft5k007v".
+# ** Warning: (vsim-WLF-5001) Could not open WLF file: vsim.wlf
+#           Using alternate file: ./wlft5k007v
+force -freeze sim:/system_top/clk 1 0, 0 {50 ps} -r 100
+force -freeze sim:/system_top/reset 1 0
+force -freeze sim:/system_top/reset 0 0
+run
+# ** Warning: NUMERIC_STD.TO_INTEGER: metavalue detected, returning 0
+#    Time: 0 ps  Iteration: 1  Instance: /system_top/ram_inst
+# End time: 12:31:46 on Oct 27,2025, Elapsed time: 1:55:44
+# Errors: 0, Warnings: 4

@@ -1,0 +1,72 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity RAM is
+    Port (
+        RnW    : in std_logic;
+        addr   : in std_logic_vector(11 downto 0);
+        data_in  : in  std_logic_vector(15 downto 0);    
+        data_out : out std_logic_vector(15 downto 0) 
+    );
+end RAM;
+
+architecture Behavioral of RAM is
+
+    type ram_type is array(0 to 4095) of std_logic_vector(15 downto 0);
+    signal ram : ram_type := (
+     --0 => x"0100", -- LDA @100h
+     --1 => x"3101", -- SUB @101h
+     --2 => x"5004", -- JGE 004h
+     --3 => x"7000", -- STP
+     --4 => x"1100", -- STO @100h
+     --5 => x"0102", -- LDA @102h
+     --6 => x"2103", -- ADD @103h
+     --7 => x"1102", -- STO @102h
+     --8 => x"4000", -- JMP @000h
+     -- 16#100# => x"000D",
+     --16#101# => x"0004",
+     --16#102# => x"0000",
+   --  16#103# => x"0001",
+  0  => x"0120", -- LDA @120h   ; ACC = A
+  1  => x"2121", -- ADD @121h   ; ACC += B
+  2  => x"1110", -- STO @110h   ; MEM[110] = ACC (somme)
+  3  => x"0110", -- LDA @110h   ; recharger somme
+  4  => x"3122", -- SUB @122h   ; ACC -= 1
+  5  => x"1111", -- STO @111h   ; mémoriser valeur courante
+  6  => x"6004", -- JNE 004h    ; boucler tant que ACC != 0 (revient à SUB)
+  7  => x"0123", -- LDA @123h   ; ACC = 0xFFFF (-1)
+  8  => x"500A", -- JGE 00Ah    ; si ACC >= 0 -> saute à 10 (ici non pris)
+  9  => x"400B", -- JMP 00Bh    ; sinon saute à 11
+  10 => x"1112", -- STO @112h   ; (chemin JGE pris) store (souvent skip ici)
+  11 => x"0124", -- LDA @124h   ; ACC = 2
+  12 => x"2121", -- ADD @121h   ; ACC += B
+  13 => x"1113", -- STO @113h   ; stocker résultat
+  14 => x"7000", -- STP         ; stop
+
+  -- Données
+  16#110# => x"0000", -- sum (sera écrit)
+  16#111# => x"0000", -- trace de décrément (sera écrit)
+  16#112# => x"0000", -- éventuel store si JGE pris
+  16#113# => x"0000", -- résultat final
+
+  16#120# => x"0005", -- A = 5
+  16#121# => x"0003", -- B = 3
+  16#122# => x"0001", -- 1 (pour décrémenter)
+  16#123# => x"FFFF", -- -1 (test JGE non pris)
+  16#124# => x"0002", -- 2
+
+  others => (others => '0')
+        --others => (others => '0')
+    );
+  begin 
+  data_out <= ram(to_integer(unsigned(addr))) when RnW='1';
+  
+  process(RnW, addr,data_in)
+  begin
+    if RnW='0' then
+      ram(to_integer(unsigned(addr))) <= data_in;
+    end if;
+  end process;
+
+end Behavioral;

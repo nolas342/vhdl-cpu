@@ -1,0 +1,33 @@
+vlib work
+vmap work work
+
+# Compilation des composants
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/PC.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/IR.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/ACC.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/ACC_Buffer.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/MUXA.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/MUXB.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/UAL.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/RAM.vhd
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/control.vhd
+
+# Compilation du top-level
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/system_top.vhd
+
+# Compilation du testbench
+vcom -2002 -explicit C:/Users/DELL/Desktop/workspace/projet_vhdl/tb_system_top.vhd
+
+# Lancement de la simulation
+vsim work.tb_system_top
+
+# Ajout des signaux à la fenêtre de simulation
+add wave -divider "Entrées"
+add wave sim:/tb_system_top/clk_tb
+add wave sim:/tb_system_top/reset_tb
+
+add wave -divider "Signaux internes"
+add wave -recursive sim:/tb_system_top/uut
+
+# Démarrer la simulation
+run 1000 ns

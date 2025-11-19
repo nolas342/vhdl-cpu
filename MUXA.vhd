@@ -1,0 +1,25 @@
+library IEEE;
+use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.NUMERIC_STD.ALL;
+
+entity MUXA is
+    Port (
+        selA    : in std_logic;
+        ir_out : in std_logic_vector(11 downto 0);
+        pc_out  : in std_logic_vector(11 downto 0);
+        s       : out std_logic_vector(11 downto 0)
+    );
+end MUXA;
+
+architecture Behavioral of MUXA is
+begin
+    process(selA, ir_out, pc_out)
+    begin
+        if selA = '1' then
+            s <= ir_out;
+        else
+            s <= pc_out;
+        end if;
+    end process;
+end Behavioral;
+
